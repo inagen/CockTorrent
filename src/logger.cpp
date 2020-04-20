@@ -6,7 +6,7 @@
 Logger* Logger::logger_instance = nullptr;
 std::ofstream Logger::file;
 
-Logger* Logger::GetInstance() {
+Logger* Logger::get_instance() {
 	if (logger_instance == nullptr) {
 		logger_instance = new Logger;
 		file.open(LOG_FILE_PATH, std::ios::out | std::ios::app);

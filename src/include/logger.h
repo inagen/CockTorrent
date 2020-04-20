@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOGGER_H
+#define LOGGER_H
 
 #include <fstream>
 #include <string>
@@ -11,7 +12,7 @@ private:
 	static std::ofstream file;
 
 public:
-	static Logger *GetInstance();
+	static Logger *get_instance();
 	void Debug(const std::string &);
 	void Info(const std::string &);
 	void Warning(const std::string &);
@@ -22,3 +23,5 @@ private:
 	void Write(const std::string &, const std::string &);
 	Logger &operator=(const Logger &) { return *this; };
 };
+
+#endif //LOGGER_H

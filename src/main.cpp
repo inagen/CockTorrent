@@ -1,8 +1,8 @@
 #include "logger.h"
 
 int main() {
-    Logger::GetInstance()->Error("LOL");
-    Logger::GetInstance()->Error("KEK");
-    Logger::GetInstance()->Error("CHEBUREK");
+    Logger::get_instance()->Error("LOL");
+    Logger::get_instance()->Error("KEK");
+    Logger::get_instance()->Error("CHEBUREK");
     return 0;
 }
