@@ -1,3 +1,7 @@
+cmake-build-debug/
+.idea/
+.gitignore
+
 # Prerequisites
 *.d
 
