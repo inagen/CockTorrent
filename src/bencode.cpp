@@ -15,103 +15,95 @@
 
 namespace bencode {
 
-    BencodeElement ParseBencodeElement();
+    BencodeElement      ParseBencodeElement(std::string_view &);
+    BencodeInt          ParseInt(std::string_view &);
+    BencodeInt          ParseBencodeInt(std::string_view &);
+    BencodeString       ParseBencodeString(std::string_view &);
+    BencodeList         ParseBencodeList(std::string_view &);
+    BencodeDictionary   ParseBencodeDictionary(std::string_view &);
 
-    BencodeInt ParseInt();
-
-    BencodeInt ParseBencodeInt();
-
-    BencodeString ParseBencodeString();
-
-    BencodeList ParseBencodeList();
-
-    BencodeDictionary ParseBencodeDictionary();
-
-    std::string_view expression;
-    uint64_t ind;
-
-    BencodeElement Decode(const std::string_view &expr) {
-        expression = expr;
-        ind = 0;
-        auto result = ParseBencodeElement();
-        PARSE_EXCEPTION_IF(ind != expression.size());
+    BencodeElement Decode(std::string_view expression) {
+        auto result = ParseBencodeElement(expression);
+        PARSE_EXCEPTION_IF(expression.size() != 0);
         return result;
     }
 
-    BencodeElement ParseBencodeElement() {
+    BencodeElement ParseBencodeElement(std::string_view & expression) {
         BencodeElement result;
-        char cur = expression.at(ind);
+        char cur = expression.at(0);
+        expression.remove_prefix(1);
         if (cur == 'i') {
-            result.data = ParseBencodeInt();
+            result.data = ParseBencodeInt(expression);
         } else if (cur == 'l') {
-            result.data = ParseBencodeList();
+            result.data = ParseBencodeList(expression);
         } else if (cur == 'd') {
-            result.data = ParseBencodeDictionary();
+            result.data = ParseBencodeDictionary(expression);
         } else if (std::isdigit(cur)) {
-            result.data = ParseBencodeString();
+            result.data = ParseBencodeString(expression);
         } else {
             PARSE_EXCEPTION_IF(true);
         }
         return result;
     }
 
-    BencodeInt ParseInt() {
+    BencodeInt ParseInt(std::string_view & expression) {
         BencodeInt res;
-        auto[p, ec] = std::from_chars(expression.data() + ind, expression.data() + expression.size(), res);
+        auto[p, ec] = std::from_chars(expression.data(), expression.data() + expression.size(), res);
 
         PARSE_EXCEPTION_IF(ec != std::errc());
 
-        ind = p - expression.data();
+        expression.remove_prefix(p - expression.data());
         return res;
     }
 
-    BencodeInt ParseBencodeInt() {
-        PARSE_EXCEPTION_IF(ind >= expression.size() || expression.at(ind) != 'i' || ++ind >= expression.size());
+    BencodeInt ParseBencodeInt(std::string_view & expression) {
+        PARSE_EXCEPTION_IF(expression.size() < 3|| expression.at(0) != 'i');
+        expression.remove_prefix(1);
 
-        BencodeInt res = ParseInt();
+        BencodeInt res = ParseInt(expression);
+        PARSE_EXCEPTION_IF(expression.size() < 1 || expression.at(0) != 'e');
 
-        PARSE_EXCEPTION_IF(ind >= expression.size() || expression.at(ind++) != 'e');
-
+        expression.remove_prefix(1);
         return res;
     }
 
-    BencodeString ParseBencodeString() {
-        PARSE_EXCEPTION_IF(ind >= expression.size() || !std::isdigit(expression.at(ind)));
+    BencodeString ParseBencodeString(std::string_view & expression) {
+        PARSE_EXCEPTION_IF(expression.size() < 1 || !std::isdigit(expression.at(0)));
 
-        BencodeInt stringLen = ParseInt();
+        BencodeInt stringLen = ParseInt(expression);
 
-        PARSE_EXCEPTION_IF(ind >= expression.size() || expression.at(ind) != ':');
+        PARSE_EXCEPTION_IF( expression.size() < 1 || expression.at(0) != ':');
 
-        ind++;
+        expression.remove_prefix(1);
 
-        PARSE_EXCEPTION_IF(ind + stringLen >= expression.size());
+        PARSE_EXCEPTION_IF(expression.size() < stringLen);
 
-        BencodeString result = std::string(expression.substr(ind, stringLen));
-        ind += stringLen;
+        BencodeString result = std::string(expression.substr(0, stringLen));
+        expression.remove_prefix(stringLen);
         return result;
     }
 
-    BencodeList ParseBencodeList() {
-        PARSE_EXCEPTION_IF(ind >= expression.size() || expression.at(ind) != 'l');
-        ind++;
+    BencodeList ParseBencodeList(std::string_view & expression) {
+        PARSE_EXCEPTION_IF(expression.size() < 1|| expression.at(0) != 'l');
+        expression.remove_prefix(1);
         BencodeList result;
-        while (ind < expression.size() && expression.at(ind) != 'e') {
-            result.push_back(ParseBencodeElement());
+        while (expression.size() > 0 && expression.at(0) != 'e') {
+            result.push_back(ParseBencodeElement(expression));
         }
-        ind++;
+       expression.remove_prefix(1);
         return result;
     }
 
-    BencodeDictionary ParseBencodeDictionary() {
-        PARSE_EXCEPTION_IF(ind >= expression.size() || expression.at(ind) != 'd');
-        ind++;
+    BencodeDictionary ParseBencodeDictionary(std::string_view & expression) {
+        PARSE_EXCEPTION_IF(expression.size() < 1 || expression.at(0) != 'd');
+        expression.remove_prefix(1);
         BencodeDictionary result;
-        while (ind < expression.size() && expression.at(ind) != 'e') {
-            BencodeString key = ParseBencodeString();
-            BencodeElement value = ParseBencodeElement();
+        while (expression.size() > 0 && expression.at(0) != 'e') {
+            BencodeString key = ParseBencodeString(expression);
+            BencodeElement value = ParseBencodeElement(expression);
             result.insert({key, value});
         }
-        ind++;
+        expression.remove_prefix(1);
         return result;
     }
 }

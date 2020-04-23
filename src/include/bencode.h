@@ -20,7 +20,7 @@ namespace bencode {
         std::variant<BencodeInt, BencodeString, BencodeDictionary, BencodeList> data;
     };
 
-    BencodeElement  Decode(const std::string_view&);
+    BencodeElement  Decode(std::string_view);
     std::string     Encode(const BencodeElement&);
 
 } // namespace bencode
