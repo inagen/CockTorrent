@@ -2,6 +2,7 @@
 #include <iostream>
 #include "logger.h"
 #include "bencode.h"
+#include "bencodeelementadapter.h"
 
 int main() {
     Logger::get_instance()->Debug("KEK");
@@ -13,5 +14,7 @@ int main() {
                                   "-84:infod6:lengthi346799104e4:name29:Installer-CityoftheDa"
                                   "leks.exe12:piece lengthi524288e6:pieces10:1234567890e";
     auto res = bencode::Decode(expression);
+    BencodeElementAdapter adapter{&res};
+    std::cout << adapter["announce"].string() << '\n' << adapter["announce-list"][0][0].string();
     return 0;
 }
