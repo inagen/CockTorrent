@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <exception>
 #include <charconv>
 #include "logger.h"
 #include "bencode.h"
@@ -10,6 +11,8 @@
 #define PARSE_EXCEPTION_IF(CONDITION)\
     if (true) {\
         if ((CONDITION)) {\
+            Logger::get_instance()->Error("Bencode parsing error occured");\
+            throw std::invalid_argument("Bencode parsing error");\
         }\
     }
 
@@ -24,14 +27,13 @@ namespace bencode {
 
     BencodeElement Decode(std::string_view expression) {
         auto result = ParseBencodeElement(expression);
-        PARSE_EXCEPTION_IF(expression.size() != 0);
+        PARSE_EXCEPTION_IF(expression.empty());
         return result;
     }
 
     BencodeElement ParseBencodeElement(std::string_view & expression) {
         BencodeElement result;
         char cur = expression.at(0);
-        expression.remove_prefix(1);
         if (cur == 'i') {
             result.data = ParseBencodeInt(expression);
         } else if (cur == 'l') {
@@ -57,22 +59,22 @@ namespace bencode {
     }
 
     BencodeInt ParseBencodeInt(std::string_view & expression) {
-        PARSE_EXCEPTION_IF(expression.size() < 3|| expression.at(0) != 'i');
+        PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'i');
         expression.remove_prefix(1);
 
         BencodeInt res = ParseInt(expression);
-        PARSE_EXCEPTION_IF(expression.size() < 1 || expression.at(0) != 'e');
+        PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'e');
 
         expression.remove_prefix(1);
         return res;
     }
 
     BencodeString ParseBencodeString(std::string_view & expression) {
-        PARSE_EXCEPTION_IF(expression.size() < 1 || !std::isdigit(expression.at(0)));
+        PARSE_EXCEPTION_IF(expression.empty() || !std::isdigit(expression.at(0)));
 
         BencodeInt stringLen = ParseInt(expression);
 
-        PARSE_EXCEPTION_IF( expression.size() < 1 || expression.at(0) != ':');
+        PARSE_EXCEPTION_IF( expression.empty() || expression.at(0) != ':');
 
         expression.remove_prefix(1);
 
@@ -84,10 +86,10 @@ namespace bencode {
     }
 
     BencodeList ParseBencodeList(std::string_view & expression) {
-        PARSE_EXCEPTION_IF(expression.size() < 1|| expression.at(0) != 'l');
+        PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'l');
         expression.remove_prefix(1);
         BencodeList result;
-        while (expression.size() > 0 && expression.at(0) != 'e') {
+        while (!expression.empty() && expression.at(0) != 'e') {
             result.push_back(ParseBencodeElement(expression));
         }
        expression.remove_prefix(1);
@@ -95,10 +97,10 @@ namespace bencode {
     }
 
     BencodeDictionary ParseBencodeDictionary(std::string_view & expression) {
-        PARSE_EXCEPTION_IF(expression.size() < 1 || expression.at(0) != 'd');
+        PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'd');
         expression.remove_prefix(1);
         BencodeDictionary result;
-        while (expression.size() > 0 && expression.at(0) != 'e') {
+        while (!expression.empty() && expression.at(0) != 'e') {
             BencodeString key = ParseBencodeString(expression);
             BencodeElement value = ParseBencodeElement(expression);
             result.insert({key, value});
