@@ -14,6 +14,8 @@ using BencodeCastError = std::bad_variant_access;
 template<class ElementType>
 class BencodeElementAdapter {
 public:
+    static_assert(std::is_same_v<bencode::BencodeElement, std::decay_t<ElementType>>,
+                  "ElementType of BencodeElementAdapter must be BencodeElement");
     using IntegerType = bencode::BencodeInt;
     using StringType = bencode::BencodeString;
     using ArrayType = bencode::BencodeList;
@@ -45,6 +47,10 @@ public:
     DictType &dictionary();
 
     const DictType &dictionary() const;
+
+    ElementType *element();
+
+    ElementType *element() const;
 
 private:
     ElementType *element_;
@@ -115,6 +121,16 @@ const typename BencodeElementAdapter<ElementType>::ArrayType &BencodeElementAdap
 template<class ElementType>
 const typename BencodeElementAdapter<ElementType>::DictType &BencodeElementAdapter<ElementType>::dictionary() const {
     return std::get<BencodeElementAdapter<ElementType>::DictType>(element_->data);
+}
+
+template<class ElementType>
+ElementType *BencodeElementAdapter<ElementType>::element() {
+    return element_;
+}
+
+template<class ElementType>
+ElementType *BencodeElementAdapter<ElementType>::element() const {
+    return element_;
 }
 
 

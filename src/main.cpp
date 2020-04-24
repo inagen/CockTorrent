@@ -14,7 +14,8 @@ int main() {
                                   "-84:infod6:lengthi346799104e4:name29:Installer-CityoftheDa"
                                   "leks.exe12:piece lengthi524288e6:pieces10:1234567890e";
     auto res = bencode::Decode(expression);
-    BencodeElementAdapter adapter{&res};
+    const BencodeElementAdapter adapter{&res};
+    adapter["announce-list"][0][0].string() = "lel";
     std::cout << adapter["announce"].string() << '\n' << adapter["announce-list"][0][0].string();
     return 0;
 }
