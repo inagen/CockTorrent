@@ -20,7 +20,7 @@ public:
                   "ElementType of BencodeElementAdapter must be BencodeElement");
     using IntegerType = bencode::BencodeInt;
     using StringType = bencode::BencodeString;
-    using ArrayType = bencode::BencodeList;
+    using ListType = bencode::BencodeList;
     using DictType = bencode::BencodeDictionary;
     using SizeType  = bencode::BencodeList::size_type;
 
@@ -116,7 +116,7 @@ const auto &BencodeElementAdapter<ElementType>::string() const {
 
 template<class ElementType>
 auto &BencodeElementAdapter<ElementType>::list() {
-    return std::get<ArrayType>(element_->data);
+    return std::get<ListType>(element_->data);
 }
 
 template<class ElementType>
@@ -126,7 +126,7 @@ auto &BencodeElementAdapter<ElementType>::dictionary() {
 
 template<class ElementType>
 const auto &BencodeElementAdapter<ElementType>::list() const {
-    return std::get<ArrayType>(element_->data);
+    return std::get<ListType>(element_->data);
 }
 
 template<class ElementType>

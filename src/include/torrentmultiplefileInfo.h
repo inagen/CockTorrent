@@ -26,9 +26,14 @@ public:
     using BencodeAdapter = TorrentBaseFileInfo::BencodeAdapter;
 
     struct File  {
-        File(BencodeElement const &dict);
+        using List = std::vector<String>;
+
+        explicit File(BencodeElement const &dict);
+
+        static List ListFromBencode(const BencodeAdapter::ListType &el);
+
         Integer length;
-        String path;
+        List path;
     };
 
     explicit TorrentMultipleFileInfo(BencodeElement const &el);
