@@ -1,20 +1,27 @@
 #include "logger.h"
 #include <iostream>
+#include <ios>
+#include "torrentmultiplefileInfo.h"
+#include "torrentsinglefileinfo.h"
 #include "logger.h"
 #include "bencode.h"
 #include "bencodeelementadapter.h"
 
 int main() {
     Logger::get_instance()->Debug("KEK");
-    std::string_view expression = "d8:announce42:http://bt3.rutracker.org/ann?uk=bq6T1sFtyV13:"
-                                  "announce-listll42:http://bt3.rutracker.org/ann?uk=bq6T1sFt"
-                                  "yVel31:http://retracker.local/announceee7:comment50:http:/"
-                                  "/rutracker.org/forum/viewtopic.php?t=299442910:created by1"
-                                  "3:uTorrent/202013:creation datei1275579654e8:encoding5:UTF"
-                                  "-84:infod6:lengthi346799104e4:name29:Installer-CityoftheDa"
-                                  "leks.exe12:piece lengthi524288e6:pieces10:1234567890e";
-    const auto res = bencode::Decode(expression);
-    const BencodeElementAdapter adapter{&res};
-    std::cout << adapter["announce"].string() << '\n' << adapter["announce-list"][0][0].string();
+    std::ifstream input_file{"../test-torrent-files/doctor-who-single-file.torrent"};
+    std::string expression{std::istreambuf_iterator<char>{input_file}, std::istreambuf_iterator<char>{}};
+    auto res = bencode::Decode(expression);
+    TorrentSingleFileInfo s_file_s_info{res};
+    std::cout << s_file_s_info.announce() << '\n';
+
+    input_file.close();
+    input_file.open("../test-torrent-files/Gravity-Falls-Season-1.torrent", std::ios_base::in);
+    expression = std::string{std::istreambuf_iterator<char>{input_file}, std::istreambuf_iterator<char>{}};
+    res = bencode::Decode(expression);
+
+    TorrentMultipleFileInfo s_file_m_info{res};
+    std::cout << s_file_m_info.announce();
+
     return 0;
 }
