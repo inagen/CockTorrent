@@ -10,6 +10,8 @@
 #include <variant>
 
 using BencodeCastError = std::bad_variant_access;
+template<class T>
+auto adapt(T *element);
 
 template<class ElementType>
 class BencodeElementAdapter {
@@ -22,7 +24,8 @@ public:
     using DictType = bencode::BencodeDictionary;
     using SizeType  = bencode::BencodeList::size_type;
 
-    explicit BencodeElementAdapter(ElementType *element);
+    BencodeElementAdapter(const BencodeElementAdapter&) = delete;
+    BencodeElementAdapter& operator=(BencodeElementAdapter&) = delete;
 
     BencodeElementAdapter operator[](const std::string &s);
 
@@ -40,9 +43,9 @@ public:
 
     const auto &string() const;
 
-    auto &array();
+    auto &list();
 
-    const auto &array() const;
+    const auto &list() const;
 
     auto &dictionary();
 
@@ -53,8 +56,16 @@ public:
     ElementType *element() const;
 
 private:
+    explicit BencodeElementAdapter(ElementType *element);
+    friend auto adapt<ElementType>(ElementType *);
+
     ElementType *element_;
 };
+
+template<class T>
+auto adapt(T *element) {
+    return BencodeElementAdapter{element};
+}
 
 template<class ElementType>
 BencodeElementAdapter<ElementType>::BencodeElementAdapter(ElementType *element) : element_(element) {}
@@ -62,65 +73,65 @@ BencodeElementAdapter<ElementType>::BencodeElementAdapter(ElementType *element) 
 template<class ElementType>
 BencodeElementAdapter<ElementType>
 BencodeElementAdapter<ElementType>::operator[](const std::string &s) {
-    return BencodeElementAdapter(&std::get<DictType>(element_->data)[s]);
+    return BencodeElementAdapter(&dictionary().at(s));
 }
 
 template<class ElementType>
 BencodeElementAdapter<ElementType>
 BencodeElementAdapter<ElementType>::operator[](const std::string &s) const {
-    return BencodeElementAdapter(&std::get<DictType>(element_->data).at(s));
+    return BencodeElementAdapter(&dictionary().at(s));
 }
 
 template<class ElementType>
 BencodeElementAdapter<ElementType>
-BencodeElementAdapter<ElementType>::operator[](BencodeElementAdapter::SizeType index) const {
-    return BencodeElementAdapter(&std::get<ArrayType>(element_->data).at(index));
+BencodeElementAdapter<ElementType>::operator[](SizeType index) const {
+    return BencodeElementAdapter(&list().at(index));
 }
 
 template<class ElementType>
 BencodeElementAdapter<ElementType>
-BencodeElementAdapter<ElementType>::operator[](BencodeElementAdapter::SizeType index) {
-    return BencodeElementAdapter(&std::get<ArrayType>(element_->data).at(index));
+BencodeElementAdapter<ElementType>::operator[](SizeType index) {
+    return BencodeElementAdapter(&list().at(index));
 }
 
 template<class ElementType>
 auto& BencodeElementAdapter<ElementType>::integer() {
-    return std::get<BencodeElementAdapter<ElementType>::IntegerType>(element_->data);
+    return std::get<IntegerType>(element_->data);
 }
 
 template<class ElementType>
 const auto& BencodeElementAdapter<ElementType>::integer() const {
-    return std::get<BencodeElementAdapter<ElementType>::IntegerType>(element_->data);
+    return std::get<IntegerType>(element_->data);
 }
 
 template<class ElementType>
 auto &BencodeElementAdapter<ElementType>::string() {
-    return std::get<BencodeElementAdapter<ElementType>::StringType>(element_->data);
+    return std::get<StringType>(element_->data);
 }
 
 template<class ElementType>
 const auto &BencodeElementAdapter<ElementType>::string() const {
-    return std::get<BencodeElementAdapter<ElementType>::StringType>(element_->data);
+    return std::get<StringType>(element_->data);
 }
 
 template<class ElementType>
-auto &BencodeElementAdapter<ElementType>::array() {
-    return std::get<BencodeElementAdapter<ElementType>::ArrayType>(element_->data);
+auto &BencodeElementAdapter<ElementType>::list() {
+    return std::get<ArrayType>(element_->data);
 }
 
 template<class ElementType>
 auto &BencodeElementAdapter<ElementType>::dictionary() {
-    return std::get<BencodeElementAdapter<ElementType>::DictType>(element_->data);
+    return std::get<DictType>(element_->data);
 }
 
 template<class ElementType>
-const auto &BencodeElementAdapter<ElementType>::array() const {
-    return std::get<BencodeElementAdapter<ElementType>::ArrayType>(element_->data);
+const auto &BencodeElementAdapter<ElementType>::list() const {
+    return std::get<ArrayType>(element_->data);
 }
 
 template<class ElementType>
 const auto &BencodeElementAdapter<ElementType>::dictionary() const {
-    return std::get<BencodeElementAdapter<ElementType>::DictType>(element_->data);
+    return std::get<DictType>(element_->data);
 }
 
 template<class ElementType>
