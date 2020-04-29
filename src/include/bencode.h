@@ -9,6 +9,9 @@
 #include "logger.h"
 
 namespace bencode {
+    struct ParseError : std::runtime_error {
+        using std::runtime_error::runtime_error;
+    };
 
     struct  BencodeElement;
     using   BencodeInt = long long;
@@ -22,6 +25,7 @@ namespace bencode {
 
     BencodeElement  Decode(std::string_view);
     std::string     Encode(const BencodeElement&);
+    std::string     Serialize(const BencodeElement&);
 
 } // namespace bencode
 
