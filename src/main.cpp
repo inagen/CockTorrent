@@ -1,6 +1,6 @@
 #include "logger.h"
 #include <iostream>
-#include "logger.h"
+#include <ios>
 #include "bencode.h"
 
 int main() {
@@ -11,12 +11,13 @@ int main() {
                                   "c.php?t=299442910:created by13:uTorrent/202013:creation datei127557"
                                   "9654e8:encoding5:UTF-84:infod6:lengthi346799104e4:name29:Installer-C"
                                   "ityoftheDaleks.exe12:piece lengthi524288e6:pieces2:abee";
-    //std::string_view expression = "8:abacabad";
+
     auto res = bencode::Decode(expression);
     auto encoded = bencode::Encode(res);
     std::cout << encoded << std::endl;
     std::cout << expression << std::endl;
     std::cout << expression.compare(encoded) << std::endl;
     std::cout << bencode::Serialize(res) << std::endl;
+
     return 0;
 }

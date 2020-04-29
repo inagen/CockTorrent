@@ -1,3 +1,7 @@
+//
+// Created by Timur Bairamukov
+//
+
 #ifndef UTILITIES_H
 #define UTILITIES_H
 

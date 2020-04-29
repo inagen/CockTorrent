@@ -1,11 +1,6 @@
-#include "logger.h"
-#include "utilities.h"
-#include <fstream>
-#include <string>
-
-const char *test() {
-    return "HELLO";
-}
+//
+// Created by Timur Bairamukov
+//
 
 #include "logger.h"
 #include "utilities.h"

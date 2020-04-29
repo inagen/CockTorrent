@@ -1,3 +1,7 @@
+//
+// Created by Timur Bairamukov
+//
+
 #include <map>
 #include <vector>
 #include <string>
@@ -9,21 +13,26 @@
 #include "bencode.h"
 
 #define PARSE_EXCEPTION_IF(CONDITION)\
-    if (true) {\
+    do {\
         if ((CONDITION)) {\
             Logger::get_instance()->Error("Bencode parsing error occured");\
             throw ParseError("Bencode parsing error");\
         }\
-    }
+    } while(0)
 
 namespace bencode {
 
-    BencodeElement      ParseBencodeElement(std::string_view &);
-    BencodeInt          ParseInt(std::string_view &);
-    BencodeInt          ParseBencodeInt(std::string_view &);
-    BencodeString       ParseBencodeString(std::string_view &);
-    BencodeList         ParseBencodeList(std::string_view &);
-    BencodeDictionary   ParseBencodeDictionary(std::string_view &);
+    BencodeElement ParseBencodeElement(std::string_view &);
+
+    BencodeInt ParseInt(std::string_view &);
+
+    BencodeInt ParseBencodeInt(std::string_view &);
+
+    BencodeString ParseBencodeString(std::string_view &);
+
+    BencodeList ParseBencodeList(std::string_view &);
+
+    BencodeDictionary ParseBencodeDictionary(std::string_view &);
 
     BencodeElement Decode(std::string_view expression) {
         auto result = ParseBencodeElement(expression);
@@ -31,7 +40,7 @@ namespace bencode {
         return result;
     }
 
-    BencodeElement ParseBencodeElement(std::string_view & expression) {
+    BencodeElement ParseBencodeElement(std::string_view &expression) {
         BencodeElement result;
         char cur = expression.at(0);
         if (cur == 'i') {
@@ -48,7 +57,7 @@ namespace bencode {
         return result;
     }
 
-    BencodeInt ParseInt(std::string_view & expression) {
+    BencodeInt ParseInt(std::string_view &expression) {
         BencodeInt res;
         auto[p, ec] = std::from_chars(expression.data(), expression.data() + expression.size(), res);
 
@@ -58,7 +67,7 @@ namespace bencode {
         return res;
     }
 
-    BencodeInt ParseBencodeInt(std::string_view & expression) {
+    BencodeInt ParseBencodeInt(std::string_view &expression) {
         PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'i');
         expression.remove_prefix(1);
 
@@ -69,12 +78,12 @@ namespace bencode {
         return res;
     }
 
-    BencodeString ParseBencodeString(std::string_view & expression) {
+    BencodeString ParseBencodeString(std::string_view &expression) {
         PARSE_EXCEPTION_IF(expression.empty() || !std::isdigit(expression.at(0)));
 
         BencodeInt stringLen = ParseInt(expression);
 
-        PARSE_EXCEPTION_IF( expression.empty() || expression.at(0) != ':');
+        PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != ':');
 
         expression.remove_prefix(1);
 
@@ -85,7 +94,7 @@ namespace bencode {
         return result;
     }
 
-    BencodeList ParseBencodeList(std::string_view & expression) {
+    BencodeList ParseBencodeList(std::string_view &expression) {
         PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'l');
         expression.remove_prefix(1);
         BencodeList result;
@@ -96,7 +105,7 @@ namespace bencode {
         return result;
     }
 
-    BencodeDictionary ParseBencodeDictionary(std::string_view & expression) {
+    BencodeDictionary ParseBencodeDictionary(std::string_view &expression) {
         PARSE_EXCEPTION_IF(expression.empty() || expression.at(0) != 'd');
         expression.remove_prefix(1);
         BencodeDictionary result;

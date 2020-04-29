@@ -1,3 +1,7 @@
+//
+// Created by Timur Bairamukov
+//
+
 #ifndef BENCODE_H
 #define BENCODE_H
 
